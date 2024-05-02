@@ -5,6 +5,7 @@ PgHero::Engine.routes.draw do
     get "index_bloat", to: "home#index_bloat"
     get "live_queries", to: "home#live_queries"
     get "queries", to: "home#queries"
+    get "overall_queries", to: "home#overall_queries"
     get "queries/:query_hash", to: "home#show_query", as: :show_query
     get "system", to: "home#system"
     get "cpu_usage", to: "home#cpu_usage"

@@ -26,6 +26,56 @@ module PgHero
         query_stats
       end
 
+      def current_overall_query_stats(limit: nil, sort: nil)
+        if query_stats_enabled?
+          limit ||= 100
+          sort ||= "total_minutes"
+          total_time = server_version_num >= 130000 ? "(total_plan_time + total_exec_time)" : "total_time"
+          query = <<~SQL
+            WITH query_stats AS (
+              SELECT
+                LEFT(query, 10000) AS query,
+                #{supports_query_hash? ? "queryid" : "md5(query)"} AS query_hash,
+                rolname AS user,
+                (#{total_time} / 1000 / 60) AS total_minutes,
+                (#{total_time} / calls) AS average_time,
+                calls
+              FROM
+                pg_stat_statements
+              INNER JOIN
+                pg_database ON pg_database.oid = pg_stat_statements.dbid
+              INNER JOIN
+                pg_roles ON pg_roles.oid = pg_stat_statements.userid
+              WHERE
+                calls > 0
+            )
+            SELECT
+              query,
+              query AS explainable_query,
+              query_hash,
+              query_stats.user,
+              total_minutes,
+              average_time,
+              calls,
+              total_minutes * 100.0 / (SELECT SUM(total_minutes) FROM query_stats) AS total_percent,
+              (SELECT SUM(total_minutes) FROM query_stats) AS all_queries_total_minutes
+            FROM
+              query_stats
+            ORDER BY
+              #{quote_column_name(sort)} DESC
+            LIMIT #{limit.to_i}
+          SQL
+
+          # we may be able to skip query_columns
+          # in more recent versions of Postgres
+          # as pg_stat_statements should be already normalized
+          select_all(query, query_columns: [:query, :explainable_query])
+        else
+          raise NotEnabled, "Query stats not enabled"
+        end
+      end
+
+
       def query_stats_available?
         select_one("SELECT COUNT(*) AS count FROM pg_available_extensions WHERE name = 'pg_stat_statements'") > 0
       end
