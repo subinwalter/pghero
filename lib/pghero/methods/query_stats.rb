@@ -39,7 +39,8 @@ module PgHero
                 rolname AS user,
                 (#{total_time} / 1000 / 60) AS total_minutes,
                 (#{total_time} / calls) AS average_time,
-                calls
+                calls,
+                datname
               FROM
                 pg_stat_statements
               INNER JOIN
@@ -57,6 +58,7 @@ module PgHero
               total_minutes,
               average_time,
               calls,
+              datname,
               total_minutes * 100.0 / (SELECT SUM(total_minutes) FROM query_stats) AS total_percent,
               (SELECT SUM(total_minutes) FROM query_stats) AS all_queries_total_minutes
             FROM

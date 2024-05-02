@@ -54,6 +54,11 @@
               <%= link_to "details", show_query_path(query[:query_hash], user: query[:user]), target: "_blank" %>
             <% end %>
           </span>
+          <span class="database_name">
+            <% if query[:datname] %>
+              <%= query[:datname] %>
+            <% end %>
+          </span>
         </td>
       </tr>
       <tr>
