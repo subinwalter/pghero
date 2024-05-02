@@ -136,6 +136,8 @@ module PgHero
     end
 
     def overall_queries
+      @suggested_index = {}
+      @suggested_indexes_by_query = {}
       @sort = %w(average_time calls).include?(params[:sort]) ? params[:sort] : nil
       @query_stats = @database.current_overall_query_stats(sort: @sort)
     end
@@ -436,10 +438,6 @@ module PgHero
       else
         redirect_backward alert: "The database user does not have permission to reset query stats"
       end
-    end
-
-    def overall_queries
-
     end
 
     protected

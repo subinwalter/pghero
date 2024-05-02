@@ -2,6 +2,7 @@
   <h1 style="float: left;">Overall Queries</h1>
   <% if @query_stats_enabled %>
     <% if @query_stats.any? %>
+
       <%= render partial: "queries_table", locals: {queries: @query_stats, sort_headers: true} %>
       <script>
           highlightQueries();
